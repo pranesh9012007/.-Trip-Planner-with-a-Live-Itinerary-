@@ -53,10 +53,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: \${{ env.NODE_VERSION }}
-          cache: 'npm'
 
       - name: 📦 Install dependencies
-        run: npm install
+        run: npm install --legacy-peer-deps
 
       - name: 🔍 Typecheck & Lint
         run: npm run lint
@@ -86,10 +85,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: \${{ env.NODE_VERSION }}
-          cache: 'npm'
 
       - name: 📦 Install dependencies
-        run: npm install
+        run: npm install --legacy-peer-deps
 
       - name: 📥 Download build artifact
         uses: actions/download-artifact@v4
