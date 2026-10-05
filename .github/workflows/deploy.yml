@@ -35,8 +35,8 @@ jobs:
 
       - name: 🏗️ Build frontend application
         run: npm run build
-        env:
-          NODE_ENV: production
+      env:
+        BASE_URL: /coffee-shop/: production
 
       - name: 🗄️ Upload build artifact
         uses: actions/upload-artifact@v4
