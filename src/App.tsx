@@ -10,6 +10,7 @@ import { LocalPhrases } from './components/LocalPhrases';
 import { BudgetAndTips } from './components/BudgetAndTips';
 import { RegenerateDayModal } from './components/RegenerateDayModal';
 import { ExportModal } from './components/ExportModal';
+import { DeployYamlPage } from './components/DeployYamlPage';
 import {
   MapPin,
   Calendar,
@@ -23,6 +24,7 @@ import {
   Info,
   CheckCircle2,
   AlertCircle,
+  FileCode,
 } from 'lucide-react';
 
 const DAY_COLORS = [
@@ -45,6 +47,7 @@ export default function App() {
     }
   });
 
+  const [currentView, setCurrentView] = useState<'planner' | 'deploy-yml'>('planner');
   const [activeTab, setActiveTab] = useState<'itinerary' | 'packing' | 'phrases' | 'budget'>('itinerary');
   const [activeDayIndex, setActiveDayIndex] = useState<number>(-1); // -1 means all days
   const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
@@ -252,27 +255,36 @@ export default function App() {
       {/* Header */}
       <Header
         onOpenExport={() => setIsExportOpen(true)}
-        onScrollToForm={scrollToForm}
+        onScrollToForm={() => {
+          setCurrentView('planner');
+          setTimeout(scrollToForm, 100);
+        }}
+        onOpenDeployPage={() => setCurrentView(currentView === 'deploy-yml' ? 'planner' : 'deploy-yml')}
+        isDeployPageActive={currentView === 'deploy-yml'}
         destination={trip.destination}
       />
 
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 space-y-10">
-        {/* Top Hero / Form Section */}
-        <section ref={formSectionRef} className="space-y-4">
-          <div className="text-center max-w-2xl mx-auto space-y-2">
-            <span className="text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 inline-flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5" /> AI Travel Architect with Iterative Prompting
-            </span>
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight font-['Space_Grotesk']">
-              Plan Your Dream Itinerary in Seconds
-            </h1>
-            <p className="text-sm sm:text-base text-slate-400">
-              Input any destination, budget, and travel vibe to generate a live map route, customized packing list, local phrases, and day-by-day itineraries you can iteratively regenerate.
-            </p>
-          </div>
+        {currentView === 'deploy-yml' ? (
+          <DeployYamlPage onBackToTrip={() => setCurrentView('planner')} />
+        ) : (
+          <>
+            {/* Top Hero / Form Section */}
+            <section ref={formSectionRef} className="space-y-4">
+              <div className="text-center max-w-2xl mx-auto space-y-2">
+                <span className="text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 inline-flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5" /> AI Travel Architect with Iterative Prompting
+                </span>
+                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight font-['Space_Grotesk']">
+                  Plan Your Dream Itinerary in Seconds
+                </h1>
+                <p className="text-sm sm:text-base text-slate-400">
+                  Input any destination, budget, and travel vibe to generate a live map route, customized packing list, local phrases, and day-by-day itineraries you can iteratively regenerate.
+                </p>
+              </div>
 
-          <TripForm onGenerate={handleGenerateTrip} isLoading={isGenerating} />
-        </section>
+              <TripForm onGenerate={handleGenerateTrip} isLoading={isGenerating} />
+            </section>
 
         {/* Active Itinerary Section */}
         <section ref={itinerarySectionRef} className="space-y-6 pt-4">
@@ -375,6 +387,15 @@ export default function App() {
             >
               <DollarSign className="w-4 h-4" />
               <span>Budget & Local Tips</span>
+            </button>
+
+            <button
+              onClick={() => setCurrentView('deploy-yml')}
+              className="px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all shrink-0 cursor-pointer bg-slate-900 text-slate-300 hover:text-amber-300 hover:bg-slate-850 border border-slate-800"
+              title="Open deploy.yml and CI/CD configurations"
+            >
+              <FileCode className="w-4 h-4 text-amber-400" />
+              <span>Deploy (.yml)</span>
             </button>
           </div>
 
@@ -497,6 +518,8 @@ export default function App() {
             </div>
           )}
         </section>
+        </>
+        )}
       </main>
 
       {/* Footer */}

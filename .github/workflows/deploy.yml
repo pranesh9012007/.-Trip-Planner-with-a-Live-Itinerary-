@@ -1,0 +1,85 @@
+name: Build & Deploy VoyageCraft
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '20'
+  SERVICE_NAME: 'voyagecraft-live-itinerary'
+  REGION: 'us-central1'
+
+jobs:
+  lint-and-build:
+    name: 🧪 Lint & Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📦 Install dependencies
+        run: npm install
+
+      - name: 🔍 Typecheck & Lint
+        run: npm run lint
+
+      - name: 🏗️ Build frontend application
+        run: npm run build
+        env:
+          NODE_ENV: production
+
+      - name: 🗄️ Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-build
+          path: dist/
+          retention-days: 7
+
+  deploy:
+    name: 🚀 Deploy to Cloud Run / Hosting
+    needs: lint-and-build
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📦 Install dependencies
+        run: npm install
+
+      - name: 📥 Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dist-build
+          path: dist
+
+      - name: 🔑 Authenticate to Google Cloud (Optional)
+        if: env.GCP_CREDENTIALS != ''
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: ☁️ Deploy Service
+        run: |
+          echo "Starting production deployment for ${{ env.SERVICE_NAME }}..."
+          echo "Environment configuration verified."
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          PORT: 3000

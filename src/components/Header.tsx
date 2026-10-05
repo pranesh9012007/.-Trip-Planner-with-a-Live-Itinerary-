@@ -4,12 +4,16 @@ import { Compass, Share2, Printer, Sparkles, BookOpen } from 'lucide-react';
 interface HeaderProps {
   onOpenExport: () => void;
   onScrollToForm: () => void;
+  onOpenDeployPage: () => void;
+  isDeployPageActive: boolean;
   destination?: string;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   onOpenExport,
   onScrollToForm,
+  onOpenDeployPage,
+  isDeployPageActive,
   destination,
 }) => {
   return (
@@ -37,6 +41,21 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Action Buttons */}
         <div className="flex items-center gap-2.5">
+          <button
+            type="button"
+            onClick={onOpenDeployPage}
+            className={`px-3.5 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition-all ${
+              isDeployPageActive
+                ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 shadow-sm'
+                : 'bg-slate-900 hover:bg-slate-850 border-slate-800 text-slate-300 hover:text-white'
+            }`}
+            title="View deploy.yml and CI/CD configurations"
+          >
+            <span className="text-[11px] font-mono px-1 py-0.2 rounded bg-amber-500/20 text-amber-300 font-bold">.yml</span>
+            <span className="hidden sm:inline">Deploy Config</span>
+            <span className="sm:hidden">Deploy</span>
+          </button>
+
           <button
             type="button"
             onClick={onScrollToForm}
